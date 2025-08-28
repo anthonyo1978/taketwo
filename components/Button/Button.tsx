@@ -33,15 +33,39 @@ const button = cva(
   }
 )
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLAnchorElement>, VariantProps<typeof button> {
+// Link button props
+export interface LinkButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorElement>, VariantProps<typeof button> {
   underline?: boolean
   href: string
 }
 
-export function Button({ className, intent, size, underline, ...props }: ButtonProps) {
-  return (
-    <a className={twMerge(button({ intent, size, className, underline }))} {...props}>
-      {props.children}
-    </a>
-  )
+// Form button props
+export interface FormButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof button> {
+  underline?: boolean
+}
+
+export type ButtonProps = LinkButtonProps | FormButtonProps
+
+function isLinkButton(props: ButtonProps): props is LinkButtonProps {
+  return "href" in props
+}
+
+export function Button(props: ButtonProps) {
+  const { className, intent, size, underline, ...restProps } = props
+
+  if (isLinkButton(props)) {
+    const { href, ...linkProps } = restProps as LinkButtonProps
+    return (
+      <a href={href} className={twMerge(button({ intent, size, className, underline }))} {...linkProps}>
+        {props.children}
+      </a>
+    )
+  } else {
+    const buttonProps = restProps as FormButtonProps
+    return (
+      <button className={twMerge(button({ intent, size, className, underline }))} {...buttonProps}>
+        {props.children}
+      </button>
+    )
+  }
 }
